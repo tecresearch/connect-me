@@ -312,6 +312,11 @@
             border-radius: 10px;
             border: 1px solid #1a334a;
         }
+        @keyframes blink {
+  0% {opacity:1;}
+  50% {opacity:0;}
+  100% {opacity:1;}
+        }
     </style>
 </head>
 <body>
@@ -331,7 +336,19 @@
 
         <!-- main log area -->
         <div class="log-window" id="log-window">
-            <div class="system-line">➤ raise · log · use <strong>/name handle</strong> to join · <strong>/pm user message</strong> for direct</div>
+            <div class="system-line"><span style="color:red; font-weight:bold;">
+  
+  <span style="
+    display:inline-block;
+    width:10px;
+    height:10px;
+    background:red;
+    border-radius:50%;
+    margin-right:6px;
+    animation:blink 1s infinite;
+  "></span>
+
+  <sup>🔴 Try Commands</sup>➤ raise · log · use <strong>/name handle</strong> to join · <strong>/pm user message</strong> for direct</div>
             <div class="system-line">⌨️ messages from others appear on left · yours on right</div>
         </div>
 
