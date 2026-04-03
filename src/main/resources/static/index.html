@@ -446,6 +446,66 @@
                 }
             }
 
+
+ 
+
+
+// 🔔 Notifications Browser API Sound (Throttled Beep)
+
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+let lastBeepTime = 0;          // timestamp of last sound
+const BEEP_INTERVAL = 300;     // ms → max ~3 sounds/sec
+
+function playChatBeepThrottled() {
+  const now = Date.now();
+
+  // 🚫 THROTTLE CHECK
+  if (now - lastBeepTime < BEEP_INTERVAL) {
+    return; // ignore extra messages
+  }
+
+  lastBeepTime = now;
+
+  // ✅ Resume context if blocked by autoplay policy
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+
+  // 🔊 Create sound
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.value = 900;
+
+  gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(
+    0.001,
+    audioCtx.currentTime + 0.12
+  );
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + 0.12);
+}
+
+// 👆 Required user interaction to unlock audio (autoplay policy)
+document.addEventListener(
+  "click",
+  () => {
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+  },
+  { once: true }
+);
+
+
+
             // handle incoming raw data
             function handleIncoming(raw) {
                 console.log('[in]', raw);
@@ -461,6 +521,8 @@
                             from = pmMatch[1];
                             text = pmMatch[2];
                         }
+playChatBeepThrottled();
+
                         addCard(text, from, 'standard', false, true); // incoming private
                         return;
                     }
@@ -473,11 +535,22 @@
                 if (broadMatch) {
                     const from = broadMatch[1];
                     const text = broadMatch[2];
+
+playChatBeepThrottled();
                     addCard(text, from, 'standard', false, false);
+
                 } else {
+
+playChatBeepThrottled();
                     addCard(raw, 'broadcast', 'standard', false, false);
                 }
             }
+
+
+
+
+
+
 
             // send command / message
             function sendMessage() {
