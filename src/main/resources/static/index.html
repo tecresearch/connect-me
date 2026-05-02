@@ -630,5 +630,288 @@ playChatBeepThrottled();
             }, 700);
         })();
     </script>
+
+    <!-- Floating Quick Access Button -->
+<style>
+    /* Floating button */
+    .fab-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9998;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .fab-main {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 2;
+    }
+
+    .fab-main:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 28px rgba(99, 102, 241, 0.6);
+    }
+
+    .fab-main:active {
+        transform: scale(0.95);
+    }
+
+    .fab-main .fab-icon {
+        transition: transform 0.35s ease;
+    }
+
+    .fab-main.active .fab-icon {
+        transform: rotate(45deg);
+    }
+
+    /* Pulse ring */
+    .fab-pulse {
+        position: absolute;
+        inset: -6px;
+        border-radius: 50%;
+        border: 2px solid rgba(139, 92, 246, 0.3);
+        animation: pulseRing 2s ease-out infinite;
+    }
+
+    @keyframes pulseRing {
+        0% { transform: scale(1); opacity: 0.7; }
+        100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* Menu items */
+    .fab-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+    }
+
+    .fab-menu.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .fab-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .fab-menu-item:hover .fab-menu-label {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .fab-menu-item:hover .fab-menu-icon {
+        transform: scale(1.1);
+    }
+
+    .fab-menu-label {
+        background: rgba(30, 41, 59, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        color: #e2e8f0;
+        padding: 7px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        opacity: 0;
+        transform: translateX(8px);
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .fab-menu-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+
+    /* Individual icon colors */
+    .fab-menu-icon.chat {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        color: #fff;
+    }
+
+    .fab-menu-icon.home {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #fff;
+    }
+
+    .fab-menu-icon.developer {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: #fff;
+    }
+
+    /* Overlay */
+    .fab-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 9997;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .fab-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+        .fab-container {
+            bottom: 16px;
+            right: 16px;
+            gap: 8px;
+        }
+        .fab-main {
+            width: 44px;
+            height: 44px;
+            font-size: 19px;
+        }
+        .fab-menu-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 15px;
+        }
+        .fab-menu-label {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    }
+</style>
+
+<div class="fab-overlay" id="fabOverlay"></div>
+<div class="fab-container">
+    <div class="fab-menu" id="fabMenu">
+        <!-- Community Chat -->
+        <a href="https://connect.tecresearch.me/" target="_blank" class="fab-menu-item">
+            <span class="fab-menu-label">Community Chat</span>
+            <span class="fab-menu-icon chat">
+                <i class="fas fa-comments"></i>
+            </span>
+        </a>
+        
+        <!-- Home / DSArchive -->
+        <a href="https://tecresearch.me/dsa/index.html" class="fab-menu-item">
+            <span class="fab-menu-label">DSArchive Home</span>
+            <span class="fab-menu-icon home">
+                <i class="fas fa-home"></i>
+            </span>
+        </a>
+        
+        <!-- About Developer -->
+        <a href="https://tecresearch.me/" target="_blank" class="fab-menu-item">
+            <span class="fab-menu-label">About Developer</span>
+            <span class="fab-menu-icon developer">
+                <i class="fas fa-user"></i>
+            </span>
+        </a>
+    </div>
+    
+    <button class="fab-main" id="fabMain" aria-label="Quick access menu">
+        <div class="fab-pulse"></div>
+        <span class="fab-icon">+</span>
+    </button>
+</div>
+
+<script>
+(function() {
+    const fabMain = document.getElementById('fabMain');
+    const fabMenu = document.getElementById('fabMenu');
+    const fabOverlay = document.getElementById('fabOverlay');
+    let isOpen = false;
+
+    function toggleMenu() {
+        isOpen = !isOpen;
+        
+        if (isOpen) {
+            fabMenu.classList.add('active');
+            fabMain.classList.add('active');
+            fabOverlay.classList.add('active');
+            fabMain.querySelector('.fab-icon').textContent = '×';
+            fabMain.setAttribute('aria-label', 'Close quick access menu');
+        } else {
+            fabMenu.classList.remove('active');
+            fabMain.classList.remove('active');
+            fabOverlay.classList.remove('active');
+            fabMain.querySelector('.fab-icon').textContent = '+';
+            fabMain.setAttribute('aria-label', 'Quick access menu');
+        }
+    }
+
+    function closeMenu() {
+        if (isOpen) {
+            isOpen = false;
+            fabMenu.classList.remove('active');
+            fabMain.classList.remove('active');
+            fabOverlay.classList.remove('active');
+            fabMain.querySelector('.fab-icon').textContent = '+';
+            fabMain.setAttribute('aria-label', 'Quick access menu');
+        }
+    }
+
+    // Toggle on button click
+    fabMain.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleMenu();
+    });
+
+    // Close on overlay click
+    fabOverlay.addEventListener('click', closeMenu);
+
+    // Close on pressing Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isOpen) {
+            closeMenu();
+        }
+    });
+
+    // Close on scroll (optional — comment out if you want it to stay open)
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        if (isOpen) {
+            closeMenu();
+        }
+    }, { passive: true });
+
+    console.log('✅ Floating Quick Access button ready');
+})();
+</script>
 </body>
 </html>
